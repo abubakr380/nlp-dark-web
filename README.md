@@ -9,5 +9,3 @@ Abubakar Ahmad Abdullahi
 Mustafa Zortul
 
 Şahin Bezeng
-
-Sueda Karaalioğlu
