@@ -1,8 +1,11 @@
 import numpy as np
 import pandas as pd
+from tensorflow import dtypes
 from keras.preprocessing.sequence import pad_sequences
 from keras.utils import to_categorical
-
+from keras.models import Model, Input
+from keras.layers import LSTM, Embedding, Dense, TimeDistributed, Dropout, Bidirectional
+from keras_contrib.layers import CRF
 
 data = pd.read_csv('../Dataset/Ansar1.txt', sep='\t', lineterminator='\r')
 data = data.sort_values('ThreadID')
@@ -33,7 +36,7 @@ class SentenceGetter(object):
             return None
 
 
-def getThreads(posts): # posts is a dataframe
+def getThreads(posts):  # posts is a dataframe
     posts = posts.to_numpy()
     threads = []
     threadId = -1
@@ -43,7 +46,7 @@ def getThreads(posts): # posts is a dataframe
         else:
             threadId = posts[i][1]
             threads.append([posts[i]])
-    threads = np.asarray([np.array(thread) for thread in threads]) # convert 3d matrix to numpy array
+    threads = np.asarray([np.array(thread) for thread in threads])  # convert 3d matrix to numpy array
     return threads
 
 
@@ -76,10 +79,38 @@ def preprocess_training_data():
     y = pad_sequences(maxlen=max_len, sequences=y, padding="post", value=tag2idx["O"])
     y = [to_categorical(i, num_classes=n_tags) for i in y]
 
+    from sklearn.model_selection import train_test_split
+    X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.1)
+
+    return X_tr, X_te, y_tr, y_te, max_len, n_words, n_tags
+
+
+def train_model():
+    m_input = Input(shape=(max_len,))
+    model = Embedding(input_dim=n_words + 1, output_dim=20,
+                      input_length=max_len, mask_zero=True)(m_input)  # 20-dim embedding
+    model = Bidirectional(LSTM(units=50, return_sequences=True,
+                               recurrent_dropout=0.1))(model)  # variational biLSTM
+    model = TimeDistributed(Dense(50, activation="relu"))(model)  # a dense layer as suggested by neuralNer
+    crf = CRF(n_tags)  # CRF layer
+    out = crf(model)  # output
+
+    model = Model(m_input, out)
+
+    model.compile(optimizer="rmsprop", loss=crf.loss_function, metrics=[crf.accuracy])
+
+    print(model.summary())
+    model.fit(X_tr, np.array(y_tr), batch_size=32, epochs=5,
+              validation_split=0.1, verbose=1)
+
+    return model
+
 
 def run_bilstm(threads):
     print(threads[0][0][5])
 
+
 threads = getThreads(data)
-preprocess_training_data()
+X_tr, X_te, y_tr, y_te, max_len, n_words, n_tags = preprocess_training_data()
+t_model, t_history = train_model()
 run_bilstm(threads)

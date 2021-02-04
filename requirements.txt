@@ -4,3 +4,5 @@ pandas
 networkx
 nltk
 keras
+sklearn
+tensorflow
