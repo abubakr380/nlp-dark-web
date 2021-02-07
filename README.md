@@ -4,13 +4,15 @@ This repository contains the implementation of a research titled "Extracting Org
 
 
 # Researchers
-Abubakar Ahmad Abdullahi
+* Abubakar Ahmad Abdullahi
 
-Mustafa Zortul
+* Mustafa Zortul
 
-Şahin Bezeng
+* Şahin Bezeng
 
 # Implementations
-jupyter_files > SNW_algorithm.ipynb contains the general algorithm to generate the graph without NER similarities
-jupyter_files > hmm > hmm.ipynb contains the code that gets the NER similarities of users' posts
-jupyter_files > bilstm.py contains the implementation of Bidirectional LSTM-CRF
+* jupyter_files > SNW_algorithm.ipynb contains the general algorithm to generate the graph without NER similarities
+
+* jupyter_files > hmm > hmm.ipynb contains the code that gets the NER similarities of users' posts
+
+* jupyter_files > bilstm.py contains the implementation of Bidirectional LSTM-CRF
